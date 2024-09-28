@@ -14,12 +14,14 @@ const Providers = () => {
   useEffect(() => {
     fetch("/api/providers")
       .then((res) => res.json())
-      .then((data) => setProviders(data));
+      .then((data) => setProviders(data))
+      .catch((error) => console.error('Error fetching providers:', error));
   }, []);
 
   return (
     <div>
       <h1>Available Providers</h1>
+      {/* <h1>{providers}</h1> */}
       {providers.map((provider) => (
         <div key={provider.id}>
           <h2>{provider.facilityName}</h2>

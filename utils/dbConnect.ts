@@ -11,7 +11,12 @@ const dbConnect = async () => {
     return;
   }
 
-  return mongoose.connect(MONGO_URI);
+  try {
+    await mongoose.connect(MONGO_URI);
+    console.log("MongoDB connected");
+  } catch (error) {
+    console.error("MongoDB connection error:", error);
+  }
 };
 
 export default dbConnect;
