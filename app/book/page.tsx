@@ -4,9 +4,12 @@ import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import Modal from "@/components/Modal"; // Import the modal component
+import Modal from "@/components/ui/modal"; // Import the modal component
+import { toast } from "react-toastify";
+import { useRouter } from "next/navigation"; // Import useRouter
 
 const BookAppointment = () => {
+  const router = useRouter(); // Initialize useRouter
   const searchParams = useSearchParams();
 
   const [providerId, setProviderId] = useState("");
@@ -47,13 +50,13 @@ const BookAppointment = () => {
       setReservationCode(data.reservationCode);
       setAppointmentId(data.appointmentId); // Assume the appointment ID is returned
     } else {
-      alert(`Failed to book appointment: ${data.message}`);
+      toast.error(`Failed to book appointment: ${data.message}`);
     }
   };
 
   const handleDelete = async () => {
     if (!appointmentId) {
-      alert("No appointment to delete");
+      toast.success("No appointment to delete");
       return;
     }
 
@@ -62,11 +65,11 @@ const BookAppointment = () => {
     });
 
     if (res.ok) {
-      alert("Appointment deleted successfully");
+      toast.success("Appointment deleted successfully");
       setReservationCode(""); // Clear reservation code
       setAppointmentId(""); // Clear appointment ID
     } else {
-      alert("Failed to delete appointment");
+      toast.error("Failed to delete appointment");
     }
   };
 
@@ -79,7 +82,7 @@ const BookAppointment = () => {
 
   const handleReschedule = async () => {
     if (!appointmentId) {
-      alert("No appointment to reschedule");
+      toast.success("No appointment to reschedule");
       return;
     }
 
@@ -90,7 +93,7 @@ const BookAppointment = () => {
 
   const handleRescheduleSubmit = async () => {
     if (!selectedTime) {
-      alert("Please select a new date and time.");
+      toast.success("Please select a new date and time.");
       return;
     }
 
@@ -107,20 +110,31 @@ const BookAppointment = () => {
     console.log("Reschedule Response:", data); // Log the response
 
     if (res.ok) {
-      alert("Appointment rescheduled successfully");
+      toast.success("Appointment rescheduled successfully");
       setDateTime(selectedTime); // Update state with new dateTime
       setIsModalOpen(false); // Close modal
-
-      // Redirect to provider's page
-     
     } else {
-      alert(`Failed to reschedule appointment: ${data.message}`);
+      toast.error(`Failed to reschedule appointment: ${data.message}`);
     }
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen flex flex-col items-center py-8">
-      <div className="max-w-md w-full mx-auto bg-white shadow-lg rounded-lg p-6">
+    <div className="bg-gradient-to-r from-blue-200 to-blue-400 min-h-screen flex flex-col items-center py-8">
+      <div className="max-w-md w-full mx-auto bg-white shadow-lg rounded-lg p-6 mt-16">
+        <div className="flex justify-between items-center mb-6">
+          <Button onClick={() => router.push('/providers')} className="flex items-center text-blue-600">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5 mr-2"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12H3m0 0l6 6m-6-6l6-6" />
+            </svg>
+            Back to Providers
+          </Button>
+        </div>
         <h1 className="text-3xl font-bold text-center text-black mb-6">Book an Appointment</h1>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>

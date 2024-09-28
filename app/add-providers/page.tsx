@@ -2,11 +2,12 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input"; 
 import { Button } from "@/components/ui/button"; 
-
 import { Label } from "@/components/ui/label"; 
-
+import { toast } from "react-toastify";
+import { useRouter } from "next/navigation"; // Import useRouter
 
 const CreateProvider = () => {
+  const router = useRouter(); // Initialize useRouter
   const [facilityName, setFacilityName] = useState("");
   const [doctorName, setDoctorName] = useState("");
   const [specialty, setSpecialty] = useState("");
@@ -42,7 +43,7 @@ const CreateProvider = () => {
     if (res.ok) {
       const newProvider = await res.json();
       // Set success message with provider ID
-      setSuccessMessage(`Provider added successfully! Provider ID: ${newProvider._id}`);
+      toast.success(`Provider added successfully! Provider ID: ${newProvider._id}`);
       // Optionally reset the form
       setFacilityName("");
       setDoctorName("");
@@ -56,8 +57,22 @@ const CreateProvider = () => {
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen flex flex-col items-center py-8">
-      <div className="max-w-md w-full mx-auto bg-white shadow-lg rounded-lg p-6">
+    <div className="bg-gradient-to-r from-blue-200 to-blue-400 min-h-screen flex flex-col items-center py-8">
+      <div className="max-w-md w-full mx-auto bg-white shadow-lg rounded-lg p-6 mt-16">
+        <div className="flex justify-between items-center mb-6"> 
+          <Button onClick={() => router.push('/providers')} className="flex items-center text-blue-600">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5 mr-2"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12H3m0 0l6 6m-6-6l6-6" />
+            </svg>
+            Back to Providers
+          </Button>
+        </div>
         <h1 className="text-3xl font-bold text-center text-black mb-6">Create Healthcare Provider</h1>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -66,7 +81,9 @@ const CreateProvider = () => {
               id="facilityName"
               value={facilityName}
               onChange={(e) => setFacilityName(e.target.value)}
+              placeholder="Enter facility name"
               required
+              className="placeholder-black" // Apply placeholder color
             />
           </div>
           <div>
@@ -75,7 +92,9 @@ const CreateProvider = () => {
               id="doctorName"
               value={doctorName}
               onChange={(e) => setDoctorName(e.target.value)}
+              placeholder="Enter doctor name"
               required
+              className="placeholder-black" // Apply placeholder color
             />
           </div>
           <div>
@@ -84,7 +103,9 @@ const CreateProvider = () => {
               id="specialty"
               value={specialty}
               onChange={(e) => setSpecialty(e.target.value)}
+              placeholder="Enter specialty"
               required
+              className="placeholder-black" // Apply placeholder color
             />
           </div>
           <div>
@@ -96,6 +117,7 @@ const CreateProvider = () => {
                   value={hour.dateTime}
                   onChange={(e) => handleChangeHour(index, e.target.value)}
                   required
+                  className="placeholder-black" // Apply placeholder color
                 />
               </div>
             ))}
