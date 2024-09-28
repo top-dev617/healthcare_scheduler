@@ -57,7 +57,7 @@ const Providers = () => {
                 <h3 className="mt-4 font-bold">Available Times:</h3>
                 <ul className="list-disc list-inside mt-2">
                   {provider.availableHours.map((hour, index) => (
-                    <li key={index} className="cursor-pointer text-blue-500 hover:underline" onClick={() => handleReserveAppointment(provider.id, hour)}>
+                    <li key={index} className="cursor-pointer text-blue-500 hover:underline" onClick={() => handleReserveAppointment(provider._id, hour)}>
                       {new Date(hour).toLocaleString()} {/* Formats the date and time */}
                     </li>
                   ))}
