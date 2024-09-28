@@ -4,26 +4,22 @@ import Appointment from "@/models/Appointment";
 
 export async function POST(req: NextRequest) {
   await dbConnect();
+  const { id, newDateTime } = await req.json();
 
   try {
-    const { id, newDateTime } = await req.json(); // Expecting the new date and time in the request body
+    const appointment = await Appointment.findById(id);
 
-    // Find the appointment by ID and update its dateTime
-    const updatedAppointment = await Appointment.findByIdAndUpdate(id, { dateTime: newDateTime }, { new: true });
-
-    if (!updatedAppointment) {
+    if (!appointment) {
       return NextResponse.json({ message: "Appointment not found" }, { status: 404 });
     }
 
-    // Delete the old appointment after updating
-    await Appointment.findByIdAndDelete(id);
+    // Update the appointment's dateTime
+    appointment.dateTime = newDateTime;
+    await appointment.save();
 
-    return NextResponse.json({
-      message: "Appointment rescheduled and previous one deleted successfully",
-      redirectTo: `/providers/${updatedAppointment.providerId}`,
-    }, { status: 200 });
+    return NextResponse.json({ message: "Appointment rescheduled successfully", redirectTo: `/appointments/${id}` }, { status: 200 });
   } catch (error) {
     console.error("Error rescheduling appointment:", error);
-    return NextResponse.json({ message: 'Internal server error', success: false }, { status: 500 });
+    return NextResponse.json({ message: "Internal server error", success: false }, { status: 500 });
   }
 }

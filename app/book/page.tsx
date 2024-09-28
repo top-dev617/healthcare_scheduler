@@ -4,15 +4,19 @@ import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import Modal from "@/components/Modal"; // Import the modal component
 
 const BookAppointment = () => {
   const searchParams = useSearchParams();
-  
+
   const [providerId, setProviderId] = useState("");
   const [dateTime, setDateTime] = useState("");
   const [email, setEmail] = useState("");
   const [reservationCode, setReservationCode] = useState("");
   const [appointmentId, setAppointmentId] = useState(""); // Store the appointment ID
+  const [availableTimes, setAvailableTimes] = useState([]); // For rescheduling
+  const [selectedTime, setSelectedTime] = useState(""); // To store selected time
+  const [isModalOpen, setIsModalOpen] = useState(false); // Modal state
 
   useEffect(() => {
     // Retrieve and set values from URL parameters
@@ -39,9 +43,12 @@ const BookAppointment = () => {
     });
 
     const data = await res.json();
-    console.log(data);
-    setReservationCode(data.reservationCode);
-    setAppointmentId(data.appointmentId); // Assume the appointment ID is returned
+    if (res.ok) {
+      setReservationCode(data.reservationCode);
+      setAppointmentId(data.appointmentId); // Assume the appointment ID is returned
+    } else {
+      alert(`Failed to book appointment: ${data.message}`);
+    }
   };
 
   const handleDelete = async () => {
@@ -63,37 +70,53 @@ const BookAppointment = () => {
     }
   };
 
+  const fetchAvailableTimes = async () => {
+    // Fetch available times for the provider
+    const res = await fetch(`/api/providers/${providerId}/available-times`);
+    const data = await res.json();
+    setAvailableTimes(data.availableTimes || []);
+  };
+
   const handleReschedule = async () => {
     if (!appointmentId) {
       alert("No appointment to reschedule");
       return;
     }
-  
-    const newDateTime = prompt("Enter new date and time (YYYY-MM-DDTHH:mm):", dateTime);
-    if (newDateTime) {
-      const res = await fetch("/api/appointments/reschedule", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ id: appointmentId, newDateTime }),
-      });
-  
-      const data = await res.json();
-  
-      if (res.ok) {
-        alert("Appointment rescheduled successfully");
-        setDateTime(newDateTime); // Update state with new dateTime
-  
-        // Redirect to provider's page
-        window.location.href = data.redirectTo;  // Redirect to provider's page
-      } else {
-        alert(`Failed to reschedule appointment: ${data.message}`);
-      }
+
+    // Fetch available times and open modal
+    await fetchAvailableTimes();
+    setIsModalOpen(true); // Open the modal to show available times
+  };
+
+  const handleRescheduleSubmit = async () => {
+    if (!selectedTime) {
+      alert("Please select a new date and time.");
+      return;
+    }
+
+    const res = await fetch("/api/appointments/reshedule", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ id: appointmentId, newDateTime: selectedTime }),
+    });
+
+    const data = await res.json();
+
+    console.log("Reschedule Response:", data); // Log the response
+
+    if (res.ok) {
+      alert("Appointment rescheduled successfully");
+      setDateTime(selectedTime); // Update state with new dateTime
+      setIsModalOpen(false); // Close modal
+
+      // Redirect to provider's page
+     
+    } else {
+      alert(`Failed to reschedule appointment: ${data.message}`);
     }
   };
-  
-  
 
   return (
     <div className="bg-gray-50 min-h-screen flex flex-col items-center py-8">
@@ -154,6 +177,31 @@ const BookAppointment = () => {
             </Button>
           </div>
         )}
+
+        {/* Modal for selecting available times */}
+        <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Reschedule Appointment">
+          <div className="space-y-4">
+            <p>Select a new date and time:</p>
+            <div className="space-y-2">
+              {availableTimes.map((time, index) => (
+                <div key={index} className="flex items-center space-x-2">
+                  <input
+                    type="radio"
+                    id={`time-${index}`}
+                    name="availableTime"
+                    value={time}
+                    checked={selectedTime === time}
+                    onChange={(e) => setSelectedTime(e.target.value)}
+                  />
+                  <label htmlFor={`time-${index}`}>{time}</label>
+                </div>
+              ))}
+            </div>
+            <Button onClick={handleRescheduleSubmit} className="bg-blue-600 text-white hover:bg-blue-700 transition duration-300">
+              Confirm Reschedule
+            </Button>
+          </div>
+        </Modal>
       </div>
     </div>
   );
